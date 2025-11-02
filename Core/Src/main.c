@@ -277,7 +277,7 @@ void StartDefaultTask(void const * argument)
   {
 	  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_1);
 //	  HAL_Delay(2);
-	  osDelay(5000);
+	  osDelay(1500);
   }
   /* USER CODE END 5 */
 }
@@ -297,7 +297,7 @@ void Task2init(void const * argument)
   for(;;)
   {
 	  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
-	  osDelay(2000);
+	  osDelay(6000);
 //    osDelay(1);
   }
   /* USER CODE END Task2init */
