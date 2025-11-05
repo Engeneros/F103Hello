@@ -19,6 +19,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include <stdio.h>
+#include <string.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -45,7 +47,7 @@ UART_HandleTypeDef huart2;
 osThreadId defaultTaskHandle;
 osThreadId Task2Handle;
 /* USER CODE BEGIN PV */
-
+osThreadId Task3Handle;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -55,12 +57,33 @@ static void MX_USART2_UART_Init(void);
 void StartDefaultTask(void const * argument);
 void Task2init(void const * argument);
 
-/* USER CODE BEGIN PFP */
 
+/* USER CODE BEGIN PFP */
+void Task3init(void const * argument);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void SendDT(void)
+{
+	uint8_t data[] = "Hello from Deftask\n";
+	HAL_UART_Transmit(&huart2, data, sizeof(data), 500);
+	printf("Good Morning, I am DT");
+}
+
+void SendT2(void)
+{
+	uint8_t data[] = "Hello from task2\n";
+	HAL_UART_Transmit(&huart2, data, sizeof(data), 500);
+	printf("Hi, I am T2");
+}
+
+void SendT3(void)
+{
+	uint8_t data[] = "Hello from task3\n";
+	HAL_UART_Transmit(&huart2, data, sizeof(data), 500);
+	printf("Hello, I am T3");
+}
 
 /* USER CODE END 0 */
 
@@ -124,6 +147,8 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
+  osThreadDef(Task3, Task3init, osPriorityNormal, 0, 128);
+  Task3Handle = osThreadCreate(osThread(Task3), NULL);
   /* USER CODE END RTOS_THREADS */
 
   /* Start scheduler */
@@ -275,6 +300,7 @@ void StartDefaultTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+	 SendDT();
 	  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_1);
 //	  HAL_Delay(2);
 	  osDelay(1500);
@@ -296,8 +322,24 @@ void Task2init(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+	  SendT2();
 	  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
 	  osDelay(6000);
+//    osDelay(1);
+  }
+  /* USER CODE END Task2init */
+}
+
+
+void Task3init(void const * argument)
+{
+
+  /* USER CODE BEGIN Task2init */
+  /* Infinite loop */
+  for(;;)
+  {
+	  SendT3();
+	  osDelay(2500);
 //    osDelay(1);
   }
   /* USER CODE END Task2init */
