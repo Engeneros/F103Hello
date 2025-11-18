@@ -19,12 +19,11 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
-#include <stdio.h>
-#include <string.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdio.h>
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -42,6 +41,8 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+TIM_HandleTypeDef htim3;
+
 UART_HandleTypeDef huart2;
 
 osThreadId defaultTaskHandle;
@@ -54,9 +55,9 @@ osThreadId Task3Handle;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_TIM3_Init(void);
 void StartDefaultTask(void const * argument);
 void Task2init(void const * argument);
-
 
 /* USER CODE BEGIN PFP */
 void Task3init(void const * argument);
@@ -64,25 +65,28 @@ void Task3init(void const * argument);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void SendDT(void)
+void SendDT(unsigned int val )
 {
-	uint8_t data[] = "Hello from Deftask\n";
-	HAL_UART_Transmit(&huart2, data, sizeof(data), 500);
-	printf("Good Morning, I am DT");
+	char str [64];
+	sprintf (str, "1234567890Hello from DefTask#:%d\n", val);
+	HAL_UART_Transmit(&huart2, (uint8_t*) str, sizeof(str), 500);
+//	printf("Hello, I am DefTAsk %d", val);
 }
 
-void SendT2(void)
+void SendT2(unsigned int val )
 {
-	uint8_t data[] = "Hello from task2\n";
-	HAL_UART_Transmit(&huart2, data, sizeof(data), 500);
-	printf("Hi, I am T2");
+	char str [64];
+	sprintf (str, "=======9876543210====Hello from task2#:%d\n", val);
+	HAL_UART_Transmit(&huart2, (uint8_t*) str, sizeof(str), 500);
+//	printf("Hello, I am T2 %d", val);
 }
 
-void SendT3(void)
+void SendT3(unsigned int val )
 {
-	uint8_t data[] = "Hello from task3\n";
-	HAL_UART_Transmit(&huart2, data, sizeof(data), 500);
-	printf("Hello, I am T3");
+	char str [64];
+	sprintf (str, "*****XXXX******Hello from task3#:%d\n", val);
+	HAL_UART_Transmit(&huart2, (uint8_t*) str, sizeof(str), 500);
+//	printf("Hello, I am T3 %d", val);
 }
 
 /* USER CODE END 0 */
@@ -116,6 +120,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -160,8 +165,6 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
-	  HAL_Delay(1);
 
     /* USER CODE BEGIN 3 */
   }
@@ -206,6 +209,51 @@ void SystemClock_Config(void)
     Error_Handler();
   }
   HAL_RCC_MCOConfig(RCC_MCO, RCC_MCO1SOURCE_PLLCLK, RCC_MCODIV_1);
+}
+
+/**
+  * @brief TIM3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM3_Init(void)
+{
+
+  /* USER CODE BEGIN TIM3_Init 0 */
+
+  /* USER CODE END TIM3_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM3_Init 1 */
+
+  /* USER CODE END TIM3_Init 1 */
+  htim3.Instance = TIM3;
+  htim3.Init.Prescaler = 71;
+  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim3.Init.Period = 50;
+  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM3_Init 2 */
+
+  /* USER CODE END TIM3_Init 2 */
+
 }
 
 /**
@@ -284,7 +332,18 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void Task3init(void const * argument)
+{
+  static unsigned int  counter = 0;
+  for(;;)
+  {
+	  SendT3(counter++);
+	  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+	  osDelay(899);
+//    osDelay(1);
+  }
 
+}
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -297,13 +356,14 @@ static void MX_GPIO_Init(void)
 void StartDefaultTask(void const * argument)
 {
   /* USER CODE BEGIN 5 */
+	static unsigned int  counter = 0;
   /* Infinite loop */
   for(;;)
   {
-	 SendDT();
+	 SendDT(counter++);
 	  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_1);
 //	  HAL_Delay(2);
-	  osDelay(1500);
+	  osDelay(955);
   }
   /* USER CODE END 5 */
 }
@@ -317,29 +377,14 @@ void StartDefaultTask(void const * argument)
 /* USER CODE END Header_Task2init */
 void Task2init(void const * argument)
 {
-
   /* USER CODE BEGIN Task2init */
+	static unsigned int  counter = 0;
   /* Infinite loop */
   for(;;)
   {
-	  SendT2();
+	  SendT2(counter++);
 	  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
-	  osDelay(6000);
-//    osDelay(1);
-  }
-  /* USER CODE END Task2init */
-}
-
-
-void Task3init(void const * argument)
-{
-
-  /* USER CODE BEGIN Task2init */
-  /* Infinite loop */
-  for(;;)
-  {
-	  SendT3();
-	  osDelay(2500);
+	  osDelay(700);
 //    osDelay(1);
   }
   /* USER CODE END Task2init */
