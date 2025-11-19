@@ -1,3 +1,4 @@
 01.11.2025 Free RTOS work**
 05.11.2025 3 Threads + 2 LEDs (PA0, PA1) & Uart2 (PA2 Tx, PA3 Rx) Work**
+19.11.2025 3 Threads + 3 LEDs (PA0, PA1, PC13) & Uart2 (PA2 Tx, PA3 Rx) & Timer3 
 
